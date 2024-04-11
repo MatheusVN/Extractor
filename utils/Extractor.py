@@ -23,9 +23,12 @@ class Extractor:
                     destination_folder = zip_file.parent / zip_file.stem
                     futures.append(executor.submit(self.__extract_zip, zip_file, destination_folder, total_files))
                     
-                new_zip_files = []
+                new_zip_files = [Path]
                 for future in as_completed(futures):
                     new_zip_files.extend(future.result())
+
+            for folder in {zip_file.parent for zip_file in new_zip_files}:
+                new_zip_files.extend(self.__find_zips_in_folder(folder))
 
             zip_files = new_zip_files
             total_files += len(zip_files)
@@ -53,3 +56,7 @@ class Extractor:
             self.wrongs.append(zip_file)
         print(message)
         return new_zip_files
+
+    @staticmethod
+    def __find_zips_in_folder(folder: Path) -> list[Path]:
+        return list(folder.rglob('*.zip'))
