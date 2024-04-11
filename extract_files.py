@@ -1,13 +1,14 @@
 from config.config import CPU_CORES
 from utils.Extractor import Extractor
 from utils.ZipFinder import ZipFinder
+from pathlib import Path
 import time
 
 if __name__ == '__main__':
     try:
         start_time = time.time()
         root_path = input('Por favor, insira o caminho completo a ser descompactado:\n')
-        finder = ZipFinder(root_path, CPU_CORES)
+        finder = ZipFinder(Path(root_path), CPU_CORES)
         extractor = Extractor(CPU_CORES)
 
         zips = finder.find_zips()
