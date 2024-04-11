@@ -31,11 +31,12 @@ class Extractor:
             total_files += len(zip_files)
 
         end_time = time.time()
-        print(f"Not extracted files: {self.wrongs}")
-        print(f"Total execution time for extracting zips: {end_time - start_time:.2f} seconds")
+        if self.wrongs:
+            print(f"Arquivos não extraídos: {self.wrongs}")
+        print(f"Tempo total para extração: {end_time - start_time:.2f} segundos")
 
     def __extract_zip(self, zip_file: Path, destination_folder: Path, total_files: int) -> list[Path]:
-        message = f"Extracting '{zip_file}'..."
+        message = f"Extração '{zip_file}'..."
         new_zip_files = []
         try:
             with zipfile.ZipFile(zip_file, 'r') as zip_ref:
@@ -44,13 +45,13 @@ class Extractor:
             with self.__lock:
                 self.__extracted_count += 1
                 progress = (self.__extracted_count / total_files) * 100
-                message += f" Done. Progress: {self.__extracted_count}/{total_files} ({progress:.2f}%)"
-            # zip_file.unlink()
+                message += f" Completa. Progresso: {self.__extracted_count}/{total_files} ({progress:.2f}%)"
+            zip_file.unlink()
         except zipfile.BadZipFile:
-            message = f"Error: Could not extract '{zip_file}' because it's a bad zip file."
+            message = f"Error: Não foi possível extrair '{zip_file}'."
             self.wrongs.append(zip_file)
         except Exception as e:
-            message = f"Error extracting '{zip_file}': {e}"
+            message = f"Erro ao extrair '{zip_file}': {e}"
             self.wrongs.append(zip_file)
         print(message)
         return new_zip_files

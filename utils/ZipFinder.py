@@ -10,7 +10,7 @@ class ZipFinder:
     def find_zips(self) -> list[Path]:
         start_time = time.time()
 
-        print('Looking for zip files...')
+        print('Procurando arquivos .zip...')
         zip_files = self.__find_zips(self.__root_path)
         with ThreadPoolExecutor(max_workers=self.__max_workers) as executor:
             future_to_file = {executor.submit(self.__find_zips, subdir): subdir for subdir in self.__root_path.iterdir() if subdir.is_dir()}
@@ -18,11 +18,11 @@ class ZipFinder:
                 zip_files.extend(future.result())
 
         end_time = time.time()
-        print(f"Total execution time for finding zips: {end_time - start_time:.2f} seconds")
+        print(f"Tempo de execução para encontrar .zips: {end_time - start_time:.2f} segundos")
 
         total_files = len(zip_files)
         if total_files == 0:
-            print("No zip files found.")
+            print("Nenhum arquivo .zip encontrado.")
             return
         
         return zip_files
