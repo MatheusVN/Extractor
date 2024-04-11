@@ -7,13 +7,18 @@ import time
 if __name__ == '__main__':
     try:
         start_time = time.time()
-        root_path = input('Por favor, insira o caminho completo a ser descompactado:\n')
-        finder = ZipFinder(Path(root_path), CPU_CORES)
-        extractor = Extractor(CPU_CORES)
+        root_path = Path(input('Por favor, insira o caminho completo a ser descompactado:\n').replace('"', ''))
 
-        zips = finder.find_zips()
+        if root_path.is_file() and root_path.suffix == '.zip':
+            zips = [root_path]
+        elif root_path.is_dir():
+            finder = ZipFinder(root_path, CPU_CORES)
+            zips = finder.find_zips()
+        else:
+            raise ValueError("O caminho fornecido não é reconhecido como um arquivo .zip nem como um diretório.")
 
-        if zips is not None:
+        if zips:
+            extractor = Extractor(CPU_CORES)
             extractor.extract(zips)
 
 
