@@ -11,9 +11,9 @@ class ZipFinder:
         start_time = time.time()
 
         print('Looking for zip files...')
+        zip_files = self.__find_zips(self.__root_path)
         with ThreadPoolExecutor(max_workers=self.__max_workers) as executor:
             future_to_file = {executor.submit(self.__find_zips, subdir): subdir for subdir in self.__root_path.iterdir() if subdir.is_dir()}
-            zip_files = []
             for future in as_completed(future_to_file):
                 zip_files.extend(future.result())
 

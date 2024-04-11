@@ -20,8 +20,8 @@ class Extractor:
             futures = []
             with ThreadPoolExecutor(max_workers=self.__max_workers) as executor:
                 for zip_file in zip_files:
-                    destination_folder = zip_file.parent
-                    futures.append(executor.submit(self.__extract_zip, zip_file, destination_folder))
+                    destination_folder = zip_file.parent / zip_file.stem
+                    futures.append(executor.submit(self.__extract_zip, zip_file, destination_folder, total_files))
                     
                 new_zip_files = []
                 for future in as_completed(futures):
@@ -34,7 +34,7 @@ class Extractor:
         print(f"Not extracted files: {self.wrongs}")
         print(f"Total execution time for extracting zips: {end_time - start_time:.2f} seconds")
 
-    def __extract_zip(self, zip_file: Path, destination_folder: Path) -> list[Path]:
+    def __extract_zip(self, zip_file: Path, destination_folder: Path, total_files: int) -> list[Path]:
         message = f"Extracting '{zip_file}'..."
         new_zip_files = []
         try:
@@ -43,7 +43,8 @@ class Extractor:
                 new_zip_files = [destination_folder / name for name in zip_ref.namelist() if name.endswith('.zip')]
             with self.__lock:
                 self.__extracted_count += 1
-                message += f" Done. Progress: {self.__extracted_count} files extracted"
+                progress = (self.__extracted_count / total_files) * 100
+                message += f" Done. Progress: {self.__extracted_count}/{total_files} ({progress:.2f}%)"
         except zipfile.BadZipFile:
             message = f"Error: Could not extract '{zip_file}' because it's a bad zip file."
             self.wrongs.append(zip_file)
