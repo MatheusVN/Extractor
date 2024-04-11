@@ -23,12 +23,9 @@ class Extractor:
                     destination_folder = zip_file.parent / zip_file.stem
                     futures.append(executor.submit(self.__extract_zip, zip_file, destination_folder, total_files))
                     
-                new_zip_files = [Path]
+                new_zip_files = []
                 for future in as_completed(futures):
                     new_zip_files.extend(future.result())
-
-            for folder in {zip_file.parent for zip_file in new_zip_files}:
-                new_zip_files.extend(self.__find_zips_in_folder(folder))
 
             zip_files = new_zip_files
             total_files += len(zip_files)
@@ -43,11 +40,12 @@ class Extractor:
         try:
             with zipfile.ZipFile(zip_file, 'r') as zip_ref:
                 zip_ref.extractall(destination_folder)
-                new_zip_files = [destination_folder / name for name in zip_ref.namelist() if name.endswith('.zip')]
+                new_zip_files = self.__find_zips_in_folder(destination_folder)
             with self.__lock:
                 self.__extracted_count += 1
                 progress = (self.__extracted_count / total_files) * 100
                 message += f" Done. Progress: {self.__extracted_count}/{total_files} ({progress:.2f}%)"
+            # zip_file.unlink()
         except zipfile.BadZipFile:
             message = f"Error: Could not extract '{zip_file}' because it's a bad zip file."
             self.wrongs.append(zip_file)
